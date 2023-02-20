@@ -1,11 +1,42 @@
-/* const request = require('request');
-request('http://www.google.com', (error, response, body) => {
-  console.log('error:', error); // Print the error if one occurred
-  console.log('statusCode:', response && response.statusCode); // Print the response status code if a response was received
-  console.log('body:', body); // Print the HTML for the Google homepage.
-}); */
-
 const request = require('request');
+
+const fetchBreedDescription = function(breedName, callback) {
+  const options = {
+    url: 'https://api.thecatapi.com/v1/breeds/search',
+    qs: {
+      q: breedName
+    }
+  };
+  
+  request.get(options, (error, response, body) => {
+    if (error) {
+      callback(error, null);
+      return;
+    }
+    
+    if (response.statusCode !== 200) {
+      callback(`Unexpected status code: ${response.statusCode}`, null);
+      return;
+    }
+  
+    const data = JSON.parse(body);
+    
+    if (data.length === 0) {
+      callback(`Breed '${breedName}' not found.`, null);
+      return;
+    }
+  
+    const firstEntry = data[0];
+    callback(null, firstEntry.description);
+  });
+};
+
+module.exports = { fetchBreedDescription };
+
+
+
+
+/* const request = require('request');
 
 const breed = process.argv[2];
 
@@ -42,35 +73,4 @@ request.get(options, (error, response, body) => {
   const firstEntry = data[0];
   console.log(`Description for ${firstEntry.name}: ${firstEntry.description}`);
 });
-
-
-/* const request = require('request');
-
-const options = {
-  url: 'https://api.thecatapi.com/v1/breeds/search',
-  qs: {
-    q: 'siberian'
-  }
-};
-
-request.get(options, (error, response, body) => {
-  if (error) {
-    console.error(error);
-    return;
-  }
-  
-  if (response.statusCode !== 200) {
-    console.error(`Unexpected status code: ${response.statusCode}`);
-    return;
-  }
-
-  /*const data = JSON.parse(body);
-  console.log(data);
-  console.log(typeof data);
-
-  const data = JSON.parse(body);
-  const firstEntry = data[0];
-  console.log(`Description for ${firstEntry.name}: ${firstEntry.description}`);
-}); */
-
-
+*/
